@@ -1,7 +1,7 @@
 import { ethers } from 'ethers';
 
 // ⚠️ REPLACE WITH YOUR DEPLOYED CONTRACT ADDRESS
-const CONTRACT_ADDRESS = '0xYourContractAddressHere';
+const CONTRACT_ADDRESS = '0x5FbDB2315678afecb367f032d93F642f64180aa3';
 
 const CONTRACT_ABI = [
     // Manufacturer
