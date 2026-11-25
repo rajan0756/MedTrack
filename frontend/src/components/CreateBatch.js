@@ -45,8 +45,7 @@ function CreateBatch() {
                 parseInt(form.quantity)
             );
 
-            const baseURL = 'http://192.168.1.100:3000';
-            const qrData = `${baseURL}/verify?batch=${form.batchId}`;
+            const qrData = `${window.location.origin}/verify?batch=${encodeURIComponent(form.batchId)}`;
 
             QRCode.toDataURL(qrData, {
                 width: 400,

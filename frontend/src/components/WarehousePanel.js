@@ -1,58 +1,142 @@
+
 import React, { useState } from 'react';
-import { receiveAtWarehouse } from '../utils/blockchain';
+import {
+    receiveAtWarehouse,
+    dispatchFromWarehouse
+} from '../utils/blockchain';
 
 function WarehousePanel() {
+    const [mode, setMode] = useState('receive');
     const [batchId, setBatchId] = useState('');
     const [location, setLocation] = useState('');
+    const [pharmacyAddress, setPharmacyAddress] = useState('');
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
 
-    const handleReceive = async () => {
-        if (!batchId || !location) {
-            setMessage('❌ Please fill all fields');
-            return;
-        }
-        setLoading(true);
+    const isValidAddress = (address) => {
+        return /^0x[a-fA-F0-9]{40}$/.test(address);
+    };
+
+    const handleReceive = async (e) => {
+        e.preventDefault();
         setMessage('');
+
         try {
-            await receiveAtWarehouse(batchId, location);
-            setMessage('✅ Medicine received at warehouse!');
+            setLoading(true);
+            await receiveAtWarehouse(batchId.trim(), location.trim());
+            setMessage('Medicine received successfully at Warehouse.');
             setBatchId('');
             setLocation('');
-        } catch (err) {
-            setMessage('❌ Error: ' + err.message);
+        } catch (error) {
+            setMessage(error.reason || error.message || 'Receiving failed.');
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
+    };
+
+    const handleDispatch = async (e) => {
+        e.preventDefault();
+        setMessage('');
+
+        if (!isValidAddress(pharmacyAddress)) {
+            setMessage('Please enter a valid Pharmacy wallet address.');
+            return;
+        }
+
+        try {
+            setLoading(true);
+            await dispatchFromWarehouse(
+                batchId.trim(),
+                pharmacyAddress.trim(),
+                location.trim()
+            );
+
+            setMessage('Medicine successfully dispatched to Pharmacy.');
+            setBatchId('');
+            setPharmacyAddress('');
+            setLocation('');
+        } catch (error) {
+            setMessage(error.reason || error.message || 'Dispatch failed.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
-        <div className="card">
-            <h2>📦 Warehouse Panel</h2>
-            <p style={{ color: '#718096', marginBottom: '25px', fontSize: '0.95rem' }}>
-                Receive incoming medicine shipments
-            </p>
+        <div className="container">
+            <div className="card">
+                <h2>Warehouse Panel</h2>
+                <p>Manage medicine received and dispatched by the Warehouse.</p>
 
-            <div className="form-group">
-                <label>Batch ID</label>
-                <input type="text" placeholder="Enter batch ID from QR"
-                    value={batchId}
-                    onChange={(e) => setBatchId(e.target.value)} />
-            </div>
-            <div className="form-group">
-                <label>Location</label>
-                <input type="text" placeholder="e.g., Mumbai Warehouse"
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)} />
-            </div>
-            <button className="btn btn-primary" onClick={handleReceive} disabled={loading}>
-                {loading ? '⏳ Processing...' : '📦 Receive Shipment'}
-            </button>
+                <div>
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setMode('receive');
+                            setMessage('');
+                        }}
+                    >
+                        Receive Stock
+                    </button>
 
-            {message && (
-                <div className={message.includes('✅') ? 'success-message' : 'error-message'}>
-                    {message}
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setMode('dispatch');
+                            setMessage('');
+                        }}
+                    >
+                        Dispatch to Pharmacy
+                    </button>
                 </div>
-            )}
+
+                <form onSubmit={mode === 'receive' ? handleReceive : handleDispatch}>
+                    <label>Medicine Batch ID</label>
+                    <input
+                        type="text"
+                        value={batchId}
+                        onChange={(e) => setBatchId(e.target.value)}
+                        placeholder="Enter medicine batch ID"
+                        required
+                    />
+
+                    {mode === 'dispatch' && (
+                        <>
+                            <label>Pharmacy Wallet Address</label>
+                            <input
+                                type="text"
+                                value={pharmacyAddress}
+                                onChange={(e) => setPharmacyAddress(e.target.value)}
+                                placeholder="Enter registered Pharmacy address"
+                                required
+                            />
+                        </>
+                    )}
+
+                    <label>Location</label>
+                    <input
+                        type="text"
+                        value={location}
+                        onChange={(e) => setLocation(e.target.value)}
+                        placeholder="Enter warehouse location"
+                        required
+                    />
+
+                    <button type="submit" disabled={loading}>
+                        {loading
+                            ? 'Processing...'
+                            : mode === 'receive'
+                                ? 'Confirm Receipt'
+                                : 'Dispatch Medicine'}
+                    </button>
+                </form>
+
+                {message && (
+                    <div className="message">
+                        <p>{message}</p>
+                    </div>
+                )}
+            </div>
         </div>
     );
 }

@@ -11,3 +11,10 @@ frontend/node_modules/
 artifacts/
 cache/
 coverage/
+
+# Local development files
+get-account.js
+frontend/build/
+
+# Local backup
+MedTrack_Backup.sol

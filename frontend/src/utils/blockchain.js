@@ -4,6 +4,17 @@ import { ethers } from 'ethers';
 const CONTRACT_ADDRESS = '0x5FbDB2315678afecb367f032d93F642f64180aa3';
 
 const CONTRACT_ABI = [
+
+    // Admin and role management
+    "function admin() external view returns (address)",
+    "function registerParticipant(address,uint8) external",
+    "function revokeParticipant(address) external",
+    "function getParticipantRole(address) external view returns (uint8)",
+
+    // New supply-chain transfer functions
+    "function dispatchFromManufacturer(string,address,string) external",
+    "function dispatchFromWarehouse(string,address,string) external",
+
     // Manufacturer
     "function createMedicine(string,string,string,uint256,uint256) external",
     
@@ -64,6 +75,36 @@ export const getProvider = () => {
 };
 
 // ============================================
+// ADMIN AND ROLE FUNCTIONS
+// ============================================
+
+export const getAdmin = async () => {
+    const provider = getProvider();
+    const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
+    return await contract.admin();
+};
+
+export const getParticipantRole = async (address) => {
+    const provider = getProvider();
+    const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
+    return Number(await contract.getParticipantRole(address));
+};
+
+export const registerParticipant = async (address, role) => {
+    const contract = await getContract();
+    const tx = await contract.registerParticipant(address, role);
+    await tx.wait();
+    return tx;
+};
+
+export const revokeParticipant = async (address) => {
+    const contract = await getContract();
+    const tx = await contract.revokeParticipant(address);
+    await tx.wait();
+    return tx;
+};
+
+// ============================================
 // MANUFACTURER FUNCTIONS
 // ============================================
 
@@ -75,6 +116,17 @@ export const createMedicine = async (batchId, name, manufacturer, expiryDate, qu
         manufacturer,
         Math.floor(expiryDate.getTime() / 1000),
         quantity
+    );
+    await tx.wait();
+    return tx;
+};
+
+export const dispatchFromManufacturer = async (batchId, distributorAddress, location) => {
+    const contract = await getContract();
+    const tx = await contract.dispatchFromManufacturer(
+        batchId,
+        distributorAddress,
+        location
     );
     await tx.wait();
     return tx;
@@ -105,6 +157,17 @@ export const dispatchFromDistributor = async (batchId, warehouseAddress, locatio
 export const receiveAtWarehouse = async (batchId, location) => {
     const contract = await getContract();
     const tx = await contract.receiveAtWarehouse(batchId, location);
+    await tx.wait();
+    return tx;
+};
+
+export const dispatchFromWarehouse = async (batchId, pharmacyAddress, location) => {
+    const contract = await getContract();
+    const tx = await contract.dispatchFromWarehouse(
+        batchId,
+        pharmacyAddress,
+        location
+    );
     await tx.wait();
     return tx;
 };
@@ -173,10 +236,16 @@ export default {
     connectWallet,
     getContract,
     getProvider,
+    getAdmin,
+    getParticipantRole,
+    registerParticipant,
+    revokeParticipant,
     createMedicine,
+    dispatchFromManufacturer,
     receiveAtDistributor,
     dispatchFromDistributor,
     receiveAtWarehouse,
+    dispatchFromWarehouse,
     receiveAtPharmacy,
     sellToPatient,
     verifyMedicine,
