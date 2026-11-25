@@ -24,6 +24,7 @@ function WarehousePanel() {
         try {
             setLoading(true);
             await receiveAtWarehouse(batchId.trim(), location.trim());
+
             setMessage('Medicine received successfully at Warehouse.');
             setBatchId('');
             setLocation('');
@@ -45,6 +46,7 @@ function WarehousePanel() {
 
         try {
             setLoading(true);
+
             await dispatchFromWarehouse(
                 batchId.trim(),
                 pharmacyAddress.trim(),
@@ -63,34 +65,38 @@ function WarehousePanel() {
     };
 
     return (
-        <div className="container">
-            <div className="card">
-                <h2>Warehouse Panel</h2>
-                <p>Manage medicine received and dispatched by the Warehouse.</p>
+        <div className="card">
+            <h2>🏬 Warehouse Panel</h2>
+            <p style={{ color: '#718096', marginBottom: '25px', fontSize: '0.95rem' }}>
+                Receive medicine from Distributor and dispatch it to Pharmacy.
+            </p>
 
-                <div>
-                    <button
-                        type="button"
-                        onClick={() => {
-                            setMode('receive');
-                            setMessage('');
-                        }}
-                    >
-                        Receive Stock
-                    </button>
+            <div style={{ display: 'flex', gap: '12px', marginBottom: '25px', flexWrap: 'wrap' }}>
+                <button
+                    type="button"
+                    className={mode === 'receive' ? 'btn btn-primary' : 'btn btn-outline'}
+                    onClick={() => {
+                        setMode('receive');
+                        setMessage('');
+                    }}
+                >
+                    📥 Receive
+                </button>
 
-                    <button
-                        type="button"
-                        onClick={() => {
-                            setMode('dispatch');
-                            setMessage('');
-                        }}
-                    >
-                        Dispatch to Pharmacy
-                    </button>
-                </div>
+                <button
+                    type="button"
+                    className={mode === 'dispatch' ? 'btn btn-primary' : 'btn btn-outline'}
+                    onClick={() => {
+                        setMode('dispatch');
+                        setMessage('');
+                    }}
+                >
+                    📤 Dispatch
+                </button>
+            </div>
 
-                <form onSubmit={mode === 'receive' ? handleReceive : handleDispatch}>
+            <form onSubmit={mode === 'receive' ? handleReceive : handleDispatch}>
+                <div className="form-group">
                     <label>Medicine Batch ID</label>
                     <input
                         type="text"
@@ -99,21 +105,23 @@ function WarehousePanel() {
                         placeholder="Enter medicine batch ID"
                         required
                     />
+                </div>
 
-                    {mode === 'dispatch' && (
-                        <>
-                            <label>Pharmacy Wallet Address</label>
-                            <input
-                                type="text"
-                                value={pharmacyAddress}
-                                onChange={(e) => setPharmacyAddress(e.target.value)}
-                                placeholder="Enter registered Pharmacy address"
-                                required
-                            />
-                        </>
-                    )}
+                {mode === 'dispatch' && (
+                    <div className="form-group">
+                        <label>Pharmacy Wallet Address</label>
+                        <input
+                            type="text"
+                            value={pharmacyAddress}
+                            onChange={(e) => setPharmacyAddress(e.target.value)}
+                            placeholder="Enter registered Pharmacy address"
+                            required
+                        />
+                    </div>
+                )}
 
-                    <label>Location</label>
+                <div className="form-group">
+                    <label>{mode === 'receive' ? 'Receiving Location' : 'Dispatch Location'}</label>
                     <input
                         type="text"
                         value={location}
@@ -121,22 +129,30 @@ function WarehousePanel() {
                         placeholder="Enter warehouse location"
                         required
                     />
+                </div>
 
-                    <button type="submit" disabled={loading}>
-                        {loading
-                            ? 'Processing...'
-                            : mode === 'receive'
-                                ? 'Confirm Receipt'
-                                : 'Dispatch Medicine'}
-                    </button>
-                </form>
+                <button
+                    type="submit"
+                    className="btn btn-primary"
+                    disabled={loading}
+                >
+                    {loading
+                        ? '⏳ Processing...'
+                        : mode === 'receive'
+                            ? '📥 Confirm Receipt'
+                            : '📤 Dispatch to Pharmacy'}
+                </button>
+            </form>
 
-                {message && (
-                    <div className="message">
-                        <p>{message}</p>
-                    </div>
-                )}
-            </div>
+            {message && (
+                <div className={
+                    message.includes('successfully')
+                        ? 'success-message'
+                        : 'error-message'
+                } style={{ marginTop: '20px' }}>
+                    {message}
+                </div>
+            )}
         </div>
     );
 }

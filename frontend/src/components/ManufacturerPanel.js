@@ -37,21 +37,21 @@ function ManufacturerPanel() {
             setDistributorAddress('');
             setLocation('');
         } catch (error) {
-            setMessage(
-                error.reason || error.message || 'Dispatch failed.'
-            );
+            setMessage(error.reason || error.message || 'Dispatch failed.');
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="container">
-            <div className="card">
-                <h2>Manufacturer Panel</h2>
-                <p>Dispatch manufactured medicine to a registered Distributor.</p>
+        <div className="card">
+            <h2>🏭 Manufacturer Panel</h2>
+            <p style={{ color: '#718096', marginBottom: '25px', fontSize: '0.95rem' }}>
+                Dispatch manufactured medicine to a registered Distributor.
+            </p>
 
-                <form onSubmit={handleDispatch}>
+            <form onSubmit={handleDispatch}>
+                <div className="form-group">
                     <label>Medicine Batch ID</label>
                     <input
                         type="text"
@@ -60,7 +60,9 @@ function ManufacturerPanel() {
                         placeholder="Enter medicine batch ID"
                         required
                     />
+                </div>
 
+                <div className="form-group">
                     <label>Distributor Wallet Address</label>
                     <input
                         type="text"
@@ -69,7 +71,9 @@ function ManufacturerPanel() {
                         placeholder="Enter Distributor wallet address"
                         required
                     />
+                </div>
 
+                <div className="form-group">
                     <label>Dispatch Location</label>
                     <input
                         type="text"
@@ -78,18 +82,26 @@ function ManufacturerPanel() {
                         placeholder="Enter dispatch location"
                         required
                     />
+                </div>
 
-                    <button type="submit" disabled={loading}>
-                        {loading ? 'Processing...' : 'Dispatch Medicine'}
-                    </button>
-                </form>
+                <button
+                    type="submit"
+                    className="btn btn-primary"
+                    disabled={loading}
+                >
+                    {loading ? '⏳ Processing...' : '📤 Dispatch Medicine'}
+                </button>
+            </form>
 
-                {message && (
-                    <div className="message">
-                        <p>{message}</p>
-                    </div>
-                )}
-            </div>
+            {message && (
+                <div className={
+                    message.includes('successfully')
+                        ? 'success-message'
+                        : 'error-message'
+                } style={{ marginTop: '20px' }}>
+                    {message}
+                </div>
+            )}
         </div>
     );
 }

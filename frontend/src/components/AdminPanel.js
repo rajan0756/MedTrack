@@ -31,10 +31,7 @@ function AdminPanel({ account }) {
     const checkAdmin = async () => {
         const adminAddress = await getAdmin();
 
-        if (
-            !account ||
-            adminAddress.toLowerCase() !== account.toLowerCase()
-        ) {
+        if (!account || adminAddress.toLowerCase() !== account.toLowerCase()) {
             throw new Error('Access denied. Connect the Admin wallet.');
         }
     };
@@ -51,7 +48,6 @@ function AdminPanel({ account }) {
         try {
             setLoading(true);
             await checkAdmin();
-
             await registerParticipant(walletAddress, Number(role));
 
             setMessage(`${roleNames[role]} registered successfully.`);
@@ -75,12 +71,8 @@ function AdminPanel({ account }) {
 
         try {
             setLoading(true);
-
             const participantRole = await getParticipantRole(lookupAddress);
-
-            setLookupResult(
-                roleNames[participantRole] || 'Unknown Role'
-            );
+            setLookupResult(roleNames[participantRole] || 'Unknown Role');
         } catch (error) {
             setMessage(error.reason || error.message || 'Could not fetch role.');
         } finally {
@@ -100,7 +92,6 @@ function AdminPanel({ account }) {
         try {
             setLoading(true);
             await checkAdmin();
-
             await revokeParticipant(lookupAddress);
 
             setMessage('Participant access revoked successfully.');
@@ -113,14 +104,16 @@ function AdminPanel({ account }) {
     };
 
     return (
-        <div className="container">
-            <div className="card">
-                <h2>Admin Panel</h2>
-                <p>Manage MedTrack supply-chain participants.</p>
+        <div className="card">
+            <h2>🛡️ Admin Panel</h2>
+            <p style={{ color: '#718096', marginBottom: '25px', fontSize: '0.95rem' }}>
+                Manage MedTrack supply-chain participants and their access.
+            </p>
 
-                <form onSubmit={handleRegister}>
-                    <h3>Register Participant</h3>
+            <form onSubmit={handleRegister}>
+                <h3>Register Participant</h3>
 
+                <div className="form-group">
                     <label>Wallet Address</label>
                     <input
                         type="text"
@@ -129,7 +122,9 @@ function AdminPanel({ account }) {
                         placeholder="Enter participant wallet address"
                         required
                     />
+                </div>
 
+                <div className="form-group">
                     <label>Assign Role</label>
                     <select
                         value={role}
@@ -140,17 +135,23 @@ function AdminPanel({ account }) {
                         <option value="4">Warehouse</option>
                         <option value="5">Pharmacy</option>
                     </select>
+                </div>
 
-                    <button type="submit" disabled={loading}>
-                        {loading ? 'Processing...' : 'Register Participant'}
-                    </button>
-                </form>
-            </div>
+                <button
+                    type="submit"
+                    className="btn btn-primary"
+                    disabled={loading}
+                >
+                    {loading ? '⏳ Processing...' : '➕ Register Participant'}
+                </button>
+            </form>
 
-            <div className="card">
-                <h3>Manage Participant</h3>
+            <hr style={{ margin: '30px 0', border: 'none', borderTop: '1px solid #e2e8f0' }} />
 
-                <form onSubmit={handleLookup}>
+            <h3>Manage Participant</h3>
+
+            <form onSubmit={handleLookup}>
+                <div className="form-group">
                     <label>Wallet Address</label>
                     <input
                         type="text"
@@ -159,30 +160,40 @@ function AdminPanel({ account }) {
                         placeholder="Enter wallet address"
                         required
                     />
-
-                    <button type="submit" disabled={loading}>
-                        Check Role
-                    </button>
-                </form>
-
-                {lookupResult && (
-                    <p>
-                        <strong>Current Role:</strong> {lookupResult}
-                    </p>
-                )}
+                </div>
 
                 <button
-                    type="button"
-                    onClick={handleRevoke}
-                    disabled={loading || !lookupAddress}
+                    type="submit"
+                    className="btn btn-primary"
+                    disabled={loading}
                 >
-                    Revoke Access
+                    {loading ? '⏳ Processing...' : '🔍 Check Role'}
                 </button>
-            </div>
+            </form>
+
+            {lookupResult && (
+                <div className="success-message" style={{ marginTop: '20px' }}>
+                    <strong>Current Role:</strong> {lookupResult}
+                </div>
+            )}
+
+            <button
+                type="button"
+                className="btn btn-outline"
+                style={{ marginTop: '15px' }}
+                onClick={handleRevoke}
+                disabled={loading || !lookupAddress}
+            >
+                {loading ? '⏳ Processing...' : '🚫 Revoke Access'}
+            </button>
 
             {message && (
-                <div className="card">
-                    <p>{message}</p>
+                <div className={
+                    message.includes('successfully')
+                        ? 'success-message'
+                        : 'error-message'
+                } style={{ marginTop: '20px' }}>
+                    {message}
                 </div>
             )}
         </div>
